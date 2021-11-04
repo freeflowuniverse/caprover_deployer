@@ -4,6 +4,7 @@ export const DEFAULT_GRID_CONFIG = {
   mnemonics: "",
   url: "wss://tfchain.dev.threefold.io/ws",
   proxy_url: "https://rmbproxy1.devnet.grid.tf",
+  public_key: ""
 };
 
 export interface GridConfig {
@@ -11,6 +12,7 @@ export interface GridConfig {
   mnemonics: string;
   url: string;
   proxy_url: string;
+  public_key?: string
 }
 
 export async function loadConfig() {

@@ -22,6 +22,9 @@
       <a-form-item ref="proxy_url" label="Proxy URL" name="proxy_url">
         <a-input v-model:value="gridConfig.proxy_url" />
       </a-form-item>
+      <a-form-item ref="public_key" label="Public key" name="public_key">
+        <a-textarea v-model:value="gridConfig.public_key" />
+      </a-form-item>
       <a-form-item :wrapper-col="{ span: 14, offset: 4 }" :hidden="readOnly">
         <a-button type="primary" @click="onSubmit">Save</a-button>
       </a-form-item>
@@ -89,6 +92,7 @@ export default defineComponent({
         gridConfig.mnemonics = config.mnemonics;
         gridConfig.url = config.url;
         gridConfig.proxy_url = config.proxy_url;
+        gridConfig.public_key = config.public_key;
       } catch (error: any) {
         message.error(`Loading of configurations failed: ${error.toString()}`);
       } finally {

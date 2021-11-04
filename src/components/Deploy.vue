@@ -7,7 +7,7 @@
     type="warning"
     show-icon
   />
-  <a-spin :spinning="loading" v-if="!needConfig">
+  <a-spin :spinning="loading" :tip="currentEvent" v-if="!needConfig">
     <a-form
       ref="formRef"
       :model="deployParams"
@@ -15,6 +15,9 @@
       :label-col="labelCol"
       :wrapper-col="wrapperCol"
     >
+      <a-form-item ref="name" label="Name" name="name">
+        <a-input v-model:value="deployParams.name" />
+      </a-form-item>
       <a-form-item ref="node_id" label="Node ID" name="node_id">
         <a-input-number v-model:value="deployParams.node_id" />
       </a-form-item>
@@ -41,7 +44,7 @@
       <a-form-item ref="public_key" label="Public key" name="public_key">
         <a-textarea v-model:value="deployParams.public_key" />
       </a-form-item>
-      <a-collapse>
+      <!-- <a-collapse>
         <a-collapse-panel key="1" header="Grid configuration">
           <a-form-item ref="twin_id" label="Twin ID" name="twin_id">
             <a-input-number v-model:value="deployParams.twin_id" />
@@ -58,7 +61,7 @@
             <a-input v-model:value="deployParams.proxy_url" />
           </a-form-item>
         </a-collapse-panel>
-      </a-collapse>
+      </a-collapse> -->
       <hr />
       <div style="height: 20" />
       <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
@@ -71,40 +74,44 @@
 import { message, Modal } from "ant-design-vue";
 import { reactive, ref, toRaw, h, defineComponent, onMounted } from "vue";
 import type { UnwrapRef } from "vue";
+import { events, generateString } from "grid3_client";
 
 import { rules as settingsRules } from "./Settings.vue";
 import { DEFAULT_GRID_CONFIG, GridConfig, loadConfig } from "@/config";
-import { deployNode } from "@/deployer";
+import { createLogsEventListener, deployNode } from "@/deployer";
+import router from "@/router";
 
-interface MachineParams {
+interface DeployParams extends GridConfig {
+  name?: string;
   node_id: number;
   cpu: number;
   memory: number;
   disk_size: number;
   domain: string;
-  public_key: string;
 }
 
-type DeployParams = MachineParams | GridConfig;
 const DEFAULT_MACHINE_PARAMS = {
-  node_id: undefined,
+  name: "",
+  node_id: 0,
   cpu: 2,
   memory: 4096,
   disk_size: 40,
-  public_key: undefined,
+  domain: "",
 };
+const LISTENER_NAME = "caprover_deployer";
 
 export default defineComponent({
   setup() {
     const needConfig = ref<any>(true);
     const loading = ref<boolean>(true);
+    const currentEvent = ref<string>("");
     const formRef = ref();
     const defaultDeployParams = Object.assign(
-      DEFAULT_GRID_CONFIG,
-      DEFAULT_MACHINE_PARAMS
+      DEFAULT_MACHINE_PARAMS,
+      DEFAULT_GRID_CONFIG
     );
 
-    const deployParams: UnwrapRef<DeployParams> = reactive(defaultDeployParams);
+    const deployParams: DeployParams = reactive(defaultDeployParams);
 
     const rules = Object.assign(settingsRules, {
       node_id: [
@@ -159,7 +166,7 @@ export default defineComponent({
         {
           required: true,
           message:
-            "Please enter your public key to be able to access this nodePlease choose a default proxy URL",
+            "Please enter your public key to be able to access this node",
         },
       ],
     });
@@ -172,6 +179,7 @@ export default defineComponent({
         deployParams.mnemonics = config.mnemonics;
         deployParams.url = config.url;
         deployParams.proxy_url = config.proxy_url;
+        deployParams.public_key = config.public_key;
 
         needConfig.value = !(
           config.twin_id &&
@@ -186,13 +194,19 @@ export default defineComponent({
       }
     });
 
+    const eventListener = createLogsEventListener(currentEvent);
+
     const onSubmit = async () => {
       await formRef.value.validate();
 
       loading.value = true;
+      events.addListener("logs", eventListener);
+
       try {
         const params = toRaw(deployParams);
-        console.log(params);
+        if (!params.name) {
+          params.name = `caprover_${generateString(20)}`;
+        }
         const result = await deployNode(params);
 
         const ids = result.contracts.created.map(
@@ -202,22 +216,29 @@ export default defineComponent({
         Modal.info({
           title: "Success",
           content: h("div", {}, [
-            h("span", "Deployed a worker node with contract ID(s) of:"),
+            h("span", "A leader node was deployed successfully"),
             h("br"),
-            h("b", ids.join(",")),
+            h("b", `Name: ${params.name}`),
+            h("br"),
+            h("b", `Contract ID(s): ${ids.join(", ")}`),
           ]),
+          onOk() {
+            router.push("deployments");
+          },
         });
       } catch (error: any) {
         Modal.error({
           title: "Error",
           content: h("div", {}, [
-            h("span", "An error occurred while trying to deploy a worker node"),
+            h("span", "An error occurred while trying to deploy a leader node"),
             h("br"),
             h("span", error.toString()),
           ]),
         });
       } finally {
         loading.value = false;
+        events.removeListener("logs", eventListener);
+        currentEvent.value = "";
       }
     };
 
@@ -229,6 +250,7 @@ export default defineComponent({
       deployParams,
       rules,
       loading,
+      currentEvent,
       onSubmit,
     };
   },
