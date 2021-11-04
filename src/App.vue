@@ -9,19 +9,19 @@
     <a-layout>
       <a-layout-sider v-model:collapsed="collapsed" collapsible>
         <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
-          <a-menu-item key="1">
+          <a-menu-item key="deploy">
             <router-link to="/">
               <rocket-outlined />
               <span>Deploy</span>
             </router-link>
           </a-menu-item>
-          <a-menu-item key="2">
+          <a-menu-item key="deployments">
             <router-link to="/deployments">
               <cloud-server-outlined />
               <span>Deployments</span>
             </router-link>
           </a-menu-item>
-          <a-menu-item key="3">
+          <a-menu-item key="settings">
             <router-link to="/settings">
               <setting-outlined />
               <span>Settings</span>
@@ -29,10 +29,8 @@
           </a-menu-item>
         </a-menu>
       </a-layout-sider>
-      <a-layout-content :style="{ margin: '24px 16px 0' }">
-        <div
-          :style="{ padding: '24px', background: '#fff', minHeight: '360px' }"
-        >
+      <a-layout-content :style="{ margin: '16px 16px 16px 16px' }">
+        <div :style="{ padding: '24px', background: '#fff', height: '100%' }">
           <router-view />
         </div>
       </a-layout-content>
@@ -45,17 +43,24 @@ import {
   CloudServerOutlined,
   SettingOutlined,
 } from "@ant-design/icons-vue";
-import { defineComponent, ref } from "vue";
+import { computed, defineComponent, ref } from "vue";
+import router from "@/router";
+
 export default defineComponent({
   components: {
     RocketOutlined,
     CloudServerOutlined,
     SettingOutlined,
   },
-  data() {
+
+  setup() {
+    const selectedKeys = computed(() => {
+      return [router.currentRoute.value.name];
+    });
+
     return {
       collapsed: ref<boolean>(false),
-      selectedKeys: ref<string[]>(["1"]),
+      selectedKeys,
     };
   },
 });
