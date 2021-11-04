@@ -1,30 +1,70 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
-  <router-view />
+  <a-layout style="min-height: 100vh">
+    <a-layout-header style="padding: 0 10px">
+      <img src="./assets/logo.png" style="height: 100%; object-fit: contain" />
+      <span style="color: #ffff; font-size: 120%">
+        <strong> Caprover Deployer</strong>
+      </span>
+    </a-layout-header>
+    <a-layout>
+      <a-layout-sider v-model:collapsed="collapsed" collapsible>
+        <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
+          <a-menu-item key="1">
+            <router-link to="/">
+              <rocket-outlined />
+              <span>Deploy</span>
+            </router-link>
+          </a-menu-item>
+          <a-menu-item key="2">
+            <router-link to="/deployments">
+              <cloud-server-outlined />
+              <span>Deployments</span>
+            </router-link>
+          </a-menu-item>
+          <a-menu-item key="3">
+            <router-link to="/settings">
+              <setting-outlined />
+              <span>Settings</span>
+            </router-link>
+          </a-menu-item>
+        </a-menu>
+      </a-layout-sider>
+      <a-layout-content :style="{ margin: '24px 16px 0' }">
+        <div
+          :style="{ padding: '24px', background: '#fff', minHeight: '360px' }"
+        >
+          <router-view />
+        </div>
+      </a-layout-content>
+    </a-layout>
+  </a-layout>
 </template>
-
+<script lang="ts">
+import {
+  RocketOutlined,
+  CloudServerOutlined,
+  SettingOutlined,
+} from "@ant-design/icons-vue";
+import { defineComponent, ref } from "vue";
+export default defineComponent({
+  components: {
+    RocketOutlined,
+    CloudServerOutlined,
+    SettingOutlined,
+  },
+  data() {
+    return {
+      collapsed: ref<boolean>(false),
+      selectedKeys: ref<string[]>(["1"]),
+    };
+  },
+});
+</script>
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+.site-layout .site-layout-background {
+  background: #fff;
 }
-
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+[data-theme="dark"] .site-layout .site-layout-background {
+  background: #141414;
 }
 </style>
