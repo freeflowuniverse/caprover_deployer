@@ -83,7 +83,7 @@ import router from "@/router";
 
 interface DeployParams extends GridConfig {
   name?: string;
-  node_id: number;
+  node_id?: number;
   cpu: number;
   memory: number;
   disk_size: number;
@@ -92,7 +92,6 @@ interface DeployParams extends GridConfig {
 
 const DEFAULT_MACHINE_PARAMS = {
   name: "",
-  node_id: 0,
   cpu: 2,
   memory: 4096,
   disk_size: 40,
@@ -111,7 +110,7 @@ export default defineComponent({
       DEFAULT_GRID_CONFIG
     );
 
-    const deployParams: DeployParams = reactive(defaultDeployParams);
+    const deployParams: UnwrapRef<DeployParams> = reactive(defaultDeployParams);
 
     const rules = Object.assign(settingsRules, {
       node_id: [

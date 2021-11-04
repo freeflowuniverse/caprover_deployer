@@ -3,7 +3,7 @@
     <a-layout-header style="padding: 0 10px">
       <img src="./assets/logo.png" style="height: 100%; object-fit: contain" />
       <span style="color: #ffff; font-size: 120%">
-        <strong> Caprover Deployer</strong>
+        <strong> CapRover Deployer</strong>
       </span>
     </a-layout-header>
     <a-layout>
