@@ -26,7 +26,7 @@ interface CaproverDeployment {
 }
 
 function getKey(config: GridConfig) {
-  return `${config.twin_id}${config.mnemonics}${config.url}${config.proxy_url}`
+  return `${config.mnemonics}${config.url}${config.proxy_url}`
 }
 
 export async function getClient(config: GridConfig): Promise<GridClient> {
@@ -36,7 +36,7 @@ export async function getClient(config: GridConfig): Promise<GridClient> {
   }
 
   const rmbClient = new HTTPMessageBusClient(
-    config.twin_id,
+    0, // will be set by grid client
     config.proxy_url
   );
 

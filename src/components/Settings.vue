@@ -1,6 +1,6 @@
 
 <template>
-  <a-spin :spinning="loading">
+  <a-spin :spinning="loading" size="large">
     <a-form
       ref="formRef"
       :model="gridConfig"
@@ -8,9 +8,6 @@
       :label-col="labelCol"
       :wrapper-col="wrapperCol"
     >
-      <a-form-item ref="twin_id" label="Twin ID" name="twin_id">
-        <a-input-number v-model:value="gridConfig.twin_id" />
-      </a-form-item>
       <a-form-item ref="mnemonics" label="Mnemonics" name="mnemonics">
         <a-input-password v-model:value="gridConfig.mnemonics" />
       </a-form-item>
@@ -22,7 +19,11 @@
       <a-form-item ref="proxy_url" label="Proxy URL" name="proxy_url">
         <a-input v-model:value="gridConfig.proxy_url" />
       </a-form-item>
-      <a-form-item ref="public_key" label="Public key" name="public_key">
+      <a-form-item
+        ref="default_public_key"
+        label="Public key"
+        name="default_public_key"
+      >
         <a-textarea v-model:value="gridConfig.public_key" />
       </a-form-item>
       <a-form-item :wrapper-col="{ span: 14, offset: 4 }" :hidden="readOnly">
@@ -44,15 +45,6 @@ import {
 } from "../config";
 
 export const rules = {
-  twin_id: [
-    {
-      required: true,
-      message: "Please enter your twin ID",
-    },
-    {
-      type: "number",
-    },
-  ],
   mnemonics: [
     {
       required: true,
@@ -88,7 +80,6 @@ export default defineComponent({
       loading.value = true;
       try {
         const config: GridConfig = await loadConfig();
-        gridConfig.twin_id = config.twin_id;
         gridConfig.mnemonics = config.mnemonics;
         gridConfig.url = config.url;
         gridConfig.proxy_url = config.proxy_url;

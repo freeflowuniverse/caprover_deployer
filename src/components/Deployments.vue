@@ -1,5 +1,17 @@
 <template>
-  <a-spin :spinning="loading" :tip="currentEvent">
+  <a-alert
+    v-if="needConfig"
+    message="Warning"
+    description="Please complete grid configuration first (from Settings)"
+    type="warning"
+    show-icon
+  />
+  <a-spin
+    :spinning="loading"
+    :tip="currentEvent"
+    size="large"
+    v-if="!needConfig"
+  >
     <div>
       <a-button
         type="primary"
@@ -90,11 +102,18 @@ export default defineComponent({
       selectedRowKeys: [],
       loading: false,
       gridConfig: {
-        twin_id: 0,
         mnemonics: "",
         url: "",
         proxy_url: "",
       },
+    });
+
+    const needConfig = computed(() => {
+      return !(
+        state.gridConfig.mnemonics &&
+        state.gridConfig.url &&
+        state.gridConfig.proxy_url
+      );
     });
 
     const hasSelected = computed(() => state.selectedRowKeys.length > 0);
@@ -104,6 +123,9 @@ export default defineComponent({
       currentEvent.value = "Loading deployments...";
       try {
         state.gridConfig = await loadConfig();
+        if (needConfig.value) {
+          return;
+        }
         const deployments = await listDeployments(state.gridConfig);
         for (const deployment of deployments) {
           data.value.push({
@@ -135,6 +157,7 @@ export default defineComponent({
         async onOk() {
           Modal.destroyAll();
           state.loading = true;
+          currentEvent.value = "Destroying selected deployments...";
           events.addListener("logs", eventListener);
 
           try {
@@ -175,6 +198,7 @@ export default defineComponent({
       columns,
       hasSelected,
       currentEvent,
+      needConfig,
       ...toRefs(state),
 
       // func
